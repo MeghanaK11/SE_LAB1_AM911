@@ -9,6 +9,11 @@ something you need to build.
 State is split into two levels:
   - round state (board, turn, winner): cleared by reset_round()
   - match state (scoreboard): survives reset_round(), cleared only by reset_match()
+
+Controls:
+  R      restart the current round (scoreboard kept)
+  M      reset the whole match (scoreboard cleared)
+  X / O  choose which symbol starts; takes effect on the next round
 """
 
 import pygame
@@ -24,14 +29,16 @@ COMPUTER_SYMBOL = 'O'
 class GameEngine:
     def __init__(self):
         self.scores = {'X': 0, 'O': 0, 'draw': 0}
+        self.next_starter = 'X'   # who starts the NEXT round; changing it never alters the round in progress
         self.reset_round()
 
     def reset_round(self):
-        """Start a new round. The scoreboard is left untouched."""
+        """Start a new round with the chosen first player. The scoreboard is left untouched."""
         self.board = [[None] * 3 for _ in range(3)]
-        self.current_player = 'X'
+        self.current_player = self.next_starter
         self.round_over = False
         self.winner = None   # 'X', 'O', or None (meaning draw, only valid when round_over)
+        self._maybe_take_computer_turn()   # if O starts, the computer opens the round immediately
 
     def reset_match(self):
         """Clear the scoreboard and start a fresh round."""
@@ -68,6 +75,12 @@ class GameEngine:
     def handle_keydown(self, key):
         if key == pygame.K_r:
             self.reset_round()
+        elif key == pygame.K_m:
+            self.reset_match()
+        elif key == pygame.K_x:
+            self.next_starter = 'X'
+        elif key == pygame.K_o:
+            self.next_starter = 'O'
 
     def check_round_end(self):
         if self.round_over:
@@ -99,4 +112,10 @@ class GameEngine:
 
         if self.round_over:
             text = f"{self.winner} wins!" if self.winner else "Draw!"
-            renderer.draw_banner(surface, font, f"{text}  (R = new round)")
+            renderer.draw_banner(surface, font, text)
+
+        renderer.draw_controls(surface, [
+            f"Next starter: {self.next_starter}  (X / O to change)",
+            "R: restart round (keeps score)",
+            "M: reset match (clears score)",
+        ])

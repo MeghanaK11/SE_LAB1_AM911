@@ -3,7 +3,7 @@ Tic-Tac-Toe (Lab Starter)
 
 Run with:  python3 main.py
 
-Click a cell to place your symbol.
+Click a cell to place X. R: restart round, M: reset match, X / O: choose who starts.
 """
 
 import pygame
