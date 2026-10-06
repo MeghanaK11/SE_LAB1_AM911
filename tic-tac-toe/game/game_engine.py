@@ -29,6 +29,8 @@ class GameEngine:
         self.winner = None   # 'X', 'O', or None (meaning draw, only valid when round_over)
 
     def handle_click(self, pos):
+        if self.round_over:
+            return   # round has ended - ignore all board clicks until a new round starts
         if self.current_player != HUMAN_SYMBOL:
             return   # not your turn - the computer is about to move (or already has)
         cell = board_pos_to_cell(pos)
@@ -57,21 +59,26 @@ class GameEngine:
             self.__init__()
 
     def check_round_end(self):
-        if is_board_full(self.board):        # BUG: checked before looking for a winner
-            self.round_over = True
-            self.winner = None
-            return
+        # A win must be checked first: a move can complete a line AND fill the
+        # last empty cell, and that is a win, not a draw.
         winner = check_winner(self.board)
         if winner:
             self.round_over = True
             self.winner = winner
+            return
+        if is_board_full(self.board):
+            self.round_over = True
+            self.winner = None
 
     def draw(self, surface, font):
         from game import renderer
         renderer.draw_board(surface, self.board)
-        turn_label = "Your turn (X)" if self.current_player == HUMAN_SYMBOL else "Computer's turn (O)"
+        if self.round_over:
+            turn_label = "Round over"
+        else:
+            turn_label = "Your turn (X)" if self.current_player == HUMAN_SYMBOL else "Computer's turn (O)"
         renderer.draw_text(surface, font, turn_label, (10, 20))
 
         if self.round_over:
             text = f"{self.winner} wins!" if self.winner else "Draw!"
-            renderer.draw_banner(surface, font, f"{text} Press R for a new round.")
+            renderer.draw_banner(surface, font, f"{text}  (R = new round)")

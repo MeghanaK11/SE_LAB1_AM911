@@ -53,5 +53,6 @@ def draw_text(surface, font, text, pos, color=COLOR_TEXT):
 
 def draw_banner(surface, font, text):
     surf = font.render(text, True, (180, 40, 40))
-    rect = surf.get_rect(center=(surface.get_width() // 2, BOARD_TOP + BOARD_SIZE + 40))
+    # centred in the strip below the board so the whole message stays on screen
+    rect = surf.get_rect(center=(surface.get_width() // 2, BOARD_TOP + BOARD_SIZE + (surface.get_height() - BOARD_TOP - BOARD_SIZE) // 2))
     surface.blit(surf, rect)
